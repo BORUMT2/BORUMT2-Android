@@ -1,7 +1,55 @@
 package com.lumorixgame.borumt2;
-import android.content.Context; import android.opengl.GLSurfaceView; import android.view.MotionEvent;
+import android.content.Context;
+import android.opengl.GLSurfaceView;
+import android.view.MotionEvent;
+
 public class GameView extends GLSurfaceView {
- GameRenderer r; float x,y;
- public GameView(Context c){super(c);setEGLContextClientVersion(2);r=new GameRenderer();setRenderer(r);setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);}
- public boolean onTouchEvent(MotionEvent e){if(e.getAction()==0){x=e.getX();y=e.getY();return true;}if(e.getAction()==2){r.rotate((e.getX()-x)*.008f,(e.getY()-y)*.004f);x=e.getX();y=e.getY();}return true;}
+    GameRenderer r;
+    float lastX, lastY;
+    float touchStartX, touchStartY;
+    boolean moving;
+
+    public GameView(Context c) {
+        super(c);
+        setEGLContextClientVersion(2);
+        r = new GameRenderer();
+        setRenderer(r);
+        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+    }
+
+    public boolean onTouchEvent(MotionEvent e) {
+        float x = e.getX();
+        float y = e.getY();
+
+        if (e.getAction() == MotionEvent.ACTION_DOWN) {
+            lastX = x;
+            lastY = y;
+            touchStartX = x;
+            touchStartY = y;
+            moving = x < getWidth() * 0.45f;
+            return true;
+        }
+
+        if (e.getAction() == MotionEvent.ACTION_MOVE) {
+            float dx = x - lastX;
+            float dy = y - lastY;
+
+            if (moving) {
+                r.move(dx * 0.012f, dy * 0.012f);
+            } else {
+                r.rotate(dx * 0.008f, dy * 0.004f);
+            }
+
+            lastX = x;
+            lastY = y;
+            return true;
+        }
+
+        if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
+            moving = false;
+            return true;
+        }
+
+        return true;
+    }
 }
