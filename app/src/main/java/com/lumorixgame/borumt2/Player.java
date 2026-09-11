@@ -1,13 +1,16 @@
 package com.lumorixgame.borumt2;
 
 import com.lumorixgame.borumt2.item.Item;
+import com.lumorixgame.borumt2.item.Inventory;
 
 public class Player {
     public CharacterData data;
+    public Inventory inventory = new Inventory();
 
     public Player() {
         data = new CharacterData("BÖRÜ", CharacterClass.WARRIOR, Gender.MALE);
         data.createStartingItems();
+        for (Item item : data.startingItems) inventory.addItem(item);
     }
 
     public String getDisplayName() {
