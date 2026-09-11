@@ -2,6 +2,8 @@ package com.lumorixgame.borumt2;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
+import android.util.Log;
+import android.app.AlertDialog;
 
 public class GameView extends GLSurfaceView {
     GameRenderer r;
@@ -27,6 +29,27 @@ public class GameView extends GLSurfaceView {
             touchStartX = x;
             touchStartY = y;
             moving = x < getWidth() * 0.45f;
+
+            if (!moving) {
+                String npc = r.getInteractableNPC();
+                if (npc != null) {
+                    Log.d("BORUMT2_NPC", "NPC_ETKILESIM: " + npc);
+
+                    final String dialogue = r.getNPCDialogue();
+                    if (dialogue != null) {
+                        post(new Runnable() {
+                            @Override
+                            public void run() {
+                                new AlertDialog.Builder(getContext())
+                                    .setMessage(dialogue)
+                                    .setPositiveButton("Kapat", null)
+                                    .show();
+                            }
+                        });
+                    }
+                }
+            }
+
             return true;
         }
 

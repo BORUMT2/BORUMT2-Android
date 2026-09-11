@@ -12,4 +12,14 @@ public class NPC {
         this.y = y;
         this.z = z;
     }
+
+    public float distanceTo(float px, float pz) {
+        float dx = x - px;
+        float dz = z - pz;
+        return (float)Math.sqrt(dx * dx + dz * dz);
+    }
+
+    public boolean canInteract(float px, float pz) {
+        return distanceTo(px, pz) <= 2.5f;
+    }
 }

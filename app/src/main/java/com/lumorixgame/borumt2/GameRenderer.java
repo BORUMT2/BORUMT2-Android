@@ -5,6 +5,27 @@ public class GameRenderer implements GLSurfaceView.Renderer {
  FloatBuffer ground;
  public void rotate(float a,float b){yaw+=a;pitch=Math.max(-.15f,Math.min(.45f,pitch+b));}
  public void move(float dx,float dz){float sx=(float)Math.sin(yaw),cz=(float)Math.cos(yaw);player.move(dx*cz+dz*sx,dx*sx-dz*cz);}
+
+ public String getInteractableNPC(){
+     if(npc1.canInteract(player.x,player.z)) return npc1.name;
+     if(npc2.canInteract(player.x,player.z)) return npc2.name;
+     return null;
+ }
+
+ public String getNPCDialogue(){
+     String npc = getInteractableNPC();
+     if(npc == null) return null;
+
+     if(npc.equals(npc1.name)){
+         return "Ticaret Yöneticisi\\n\\nHoş geldin! Ticaret işlemleri için buradayım.";
+     }
+
+     if(npc.equals(npc2.name)){
+         return "Emlakçı\\n\\nLonca arsaları ve emlak işlemleri hakkında yardımcı olabilirim.";
+     }
+
+     return null;
+ }
  public void onSurfaceCreated(GL10 g,EGLConfig c){GLES20.glClearColor(.52f,.68f,.82f,1);GLES20.glEnable(GLES20.GL_DEPTH_TEST);
  String vs="uniform mat4 M;attribute vec3 P;void main(){gl_Position=M*vec4(P,1);}"; String fs="precision mediump float;uniform vec4 C;void main(){gl_FragColor=C;}";
  int a=sh(GLES20.GL_VERTEX_SHADER,vs),b=sh(GLES20.GL_FRAGMENT_SHADER,fs);prog=GLES20.glCreateProgram();GLES20.glAttachShader(prog,a);GLES20.glAttachShader(prog,b);GLES20.glLinkProgram(prog);
