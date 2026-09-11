@@ -1,6 +1,32 @@
 package com.lumorixgame.borumt2;
 
 public class Player {
+    public CharacterData data;
+
+    public Player() {
+        data = new CharacterData("BÖRÜ", CharacterClass.WARRIOR, Gender.MALE);
+    }
+
+    public String getDisplayName() {
+        return data.name;
+    }
+
+    public int getLevel() {
+        return data.level;
+    }
+
+    public long getYang() {
+        return data.yang;
+    }
+
+    public CharacterClass getCharacterClass() {
+        return data.characterClass;
+    }
+
+    public Gender getGender() {
+        return data.gender;
+    }
+
     public float x = 0f;
     public float y = 0f;
     public float z = 0f;

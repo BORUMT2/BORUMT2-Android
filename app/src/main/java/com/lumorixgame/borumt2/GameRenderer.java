@@ -12,6 +12,13 @@ public class GameRenderer implements GLSurfaceView.Renderer {
      return null;
  }
 
+ public String getPlayerInfo(){
+     return player.getDisplayName()
+         + " | Lv." + player.getLevel()
+         + " | " + player.getCharacterClass()
+         + " | Yang: " + player.getYang();
+ }
+
  public String getNPCDialogue(){
      String npc = getInteractableNPC();
      if(npc == null) return null;
