@@ -33,6 +33,10 @@ public class Player {
         return data.gender;
     }
 
+    public com.lumorixgame.borumt2.item.Inventory getInventory() {
+        return inventory;
+    }
+
     public Item[] getStartingItems() {
         return data.startingItems;
     }
