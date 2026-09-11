@@ -4,7 +4,7 @@ public class GameRenderer implements GLSurfaceView.Renderer {
  float[] p=new float[16],v=new float[16],m=new float[16],mv=new float[16]; float yaw=0,pitch=.12f; float playerX=0,playerZ=0; int prog,pos,col,mat;
  FloatBuffer ground;
  public void rotate(float a,float b){yaw+=a;pitch=Math.max(-.15f,Math.min(.45f,pitch+b));}
- public void move(float dx,float dz){playerX+=dx;playerZ+=dz;}
+ public void move(float dx,float dz){float sx=(float)Math.sin(yaw),cz=(float)Math.cos(yaw);playerX+=dx*cz+dz*sx;playerZ+=dx*sx-dz*cz;}
  public void onSurfaceCreated(GL10 g,EGLConfig c){GLES20.glClearColor(.52f,.68f,.82f,1);GLES20.glEnable(GLES20.GL_DEPTH_TEST);
  String vs="uniform mat4 M;attribute vec3 P;void main(){gl_Position=M*vec4(P,1);}"; String fs="precision mediump float;uniform vec4 C;void main(){gl_FragColor=C;}";
  int a=sh(GLES20.GL_VERTEX_SHADER,vs),b=sh(GLES20.GL_FRAGMENT_SHADER,fs);prog=GLES20.glCreateProgram();GLES20.glAttachShader(prog,a);GLES20.glAttachShader(prog,b);GLES20.glLinkProgram(prog);
