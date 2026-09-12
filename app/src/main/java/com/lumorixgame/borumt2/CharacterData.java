@@ -7,6 +7,14 @@ public class CharacterData {
     public CharacterClass characterClass;
     public Gender gender;
 
+    public String getClassDisplayName() {
+        return characterClass.getDisplayName();
+    }
+
+    public String getGenderDisplayName() {
+        return gender.getDisplayName();
+    }
+
     public int level = 10;
     public long yang = 1000000L;
     public Item[] startingItems;
