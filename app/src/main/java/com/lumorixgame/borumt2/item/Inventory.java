@@ -16,14 +16,22 @@ public class Inventory {
         return isValidSlot(slot) && slots[slot] == null;
     }
 
+    public boolean setItem(int slot, Item item) {
+        if (!isValidSlot(slot)) return false;
+        slots[slot] = item;
+        return true;
+    }
+
     public boolean addItem(Item item) {
         if (item == null) return false;
+
         for (int i = 0; i < SLOT_COUNT; i++) {
             if (slots[i] == null) {
                 slots[i] = item;
                 return true;
             }
         }
+
         return false;
     }
 
@@ -35,9 +43,13 @@ public class Inventory {
 
     public int getFreeSlotCount() {
         int count = 0;
+
         for (Item item : slots) {
-            if (item == null) count++;
+            if (item == null) {
+                count++;
+            }
         }
+
         return count;
     }
 
