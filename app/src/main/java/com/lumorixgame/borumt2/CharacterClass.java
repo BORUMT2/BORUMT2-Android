@@ -1,8 +1,18 @@
 package com.lumorixgame.borumt2;
 
 public enum CharacterClass {
-    WARRIOR,
+    SAVASCI,
     NINJA,
     SURA,
-    SHAMAN
+    SAMAN;
+
+    public String getDisplayName() {
+        switch (this) {
+            case SAVASCI: return "Savaşçı";
+            case NINJA: return "Ninja";
+            case SURA: return "Sura";
+            case SAMAN: return "Şaman";
+            default: return name();
+        }
+    }
 }

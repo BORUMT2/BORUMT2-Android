@@ -8,7 +8,7 @@ public class Player {
     public Inventory inventory = new Inventory();
 
     public Player() {
-        data = new CharacterData("BÖRÜ", CharacterClass.WARRIOR, Gender.MALE);
+        data = new CharacterData("BÖRÜ", CharacterClass.SAVASCI, Gender.MALE);
         data.createStartingItems();
         for (Item item : data.startingItems) inventory.addItem(item);
     }
