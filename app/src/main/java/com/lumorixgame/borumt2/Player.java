@@ -13,6 +13,12 @@ public class Player {
         for (Item item : data.startingItems) inventory.addItem(item);
     }
 
+    public Player(String name, CharacterClass characterClass, Gender gender) {
+        data = new CharacterData(name, characterClass, gender);
+        data.createStartingItems();
+        for (Item item : data.startingItems) inventory.addItem(item);
+    }
+
     public String getDisplayName() {
         return data.name;
     }
