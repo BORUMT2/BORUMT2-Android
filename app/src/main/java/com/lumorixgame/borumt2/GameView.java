@@ -20,7 +20,7 @@ public class GameView extends GLSurfaceView {
     public GameView(Context c) {
         super(c);
         setEGLContextClientVersion(2);
-        r = new GameRenderer();
+        r = new GameRenderer(this.getContext());
         setRenderer(r);
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
