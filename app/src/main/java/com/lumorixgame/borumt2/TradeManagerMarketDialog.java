@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.view.Gravity;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.lumorixgame.borumt2.item.Item;
@@ -32,6 +33,9 @@ public class TradeManagerMarketDialog {
         yang.setTextSize(16);
         layout.addView(yang);
 
+        LinearLayout materialList = new LinearLayout(context);
+        materialList.setOrientation(LinearLayout.VERTICAL);
+
         for (int i = 0; i < materials.length; i++) {
             final int index = i;
             Item item = materials[i];
@@ -52,8 +56,19 @@ public class TradeManagerMarketDialog {
                 }
             });
 
-            layout.addView(button);
+            materialList.addView(button);
         }
+
+        ScrollView scrollView = new ScrollView(context);
+        scrollView.addView(materialList);
+        layout.addView(
+                scrollView,
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        0,
+                        1f
+                )
+        );
 
         Button close = new Button(context);
         close.setText("Kapat");
