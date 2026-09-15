@@ -28,7 +28,6 @@ public class GameView extends GLSurfaceView {
     public void setSessionToken(String sessionToken) {
         this.sessionToken = sessionToken;
         loadCharacters();
-        loadCharacterState();
         r.setSessionToken(sessionToken);
     }
 
@@ -122,5 +121,4 @@ public class GameView extends GLSurfaceView {
 
         return true;
     }
-    private void loadCharacterState() { Log.d("BORUMT2_CHARACTER", "Aktif karakter durumu bekleniyor"); }
 }
