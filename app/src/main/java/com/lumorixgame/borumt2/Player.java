@@ -35,6 +35,8 @@ public class Player {
         return data.characterClass;
     }
 
+    public String getModelKey() { return data.characterClass.name() + "_" + data.gender.name(); }
+
     public Gender getGender() {
         return data.gender;
     }
