@@ -1,15 +1,21 @@
 package com.lumorixgame.borumt2;
+
+import android.app.AlertDialog;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
-import android.view.MotionEvent;
 import android.util.Log;
-import android.app.AlertDialog;
+import android.view.MotionEvent;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class GameView extends GLSurfaceView {
-    GameRenderer r;
-    float lastX, lastY;
-    float touchStartX, touchStartY;
-    boolean moving;
+    private GameRenderer r;
+    private String sessionToken;
+
+    private float lastX, lastY;
+    private float touchStartX, touchStartY;
+    private boolean moving;
 
     public GameView(Context c) {
         super(c);
@@ -17,6 +23,47 @@ public class GameView extends GLSurfaceView {
         r = new GameRenderer();
         setRenderer(r);
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+    }
+
+    public void setSessionToken(String sessionToken) {
+        this.sessionToken = sessionToken;
+        loadCharacters();
+    }
+
+    private void loadCharacters() {
+        if (sessionToken == null || sessionToken.isEmpty()) {
+            Log.d("BORUMT2_CHARACTERS", "Session token yok");
+            return;
+        }
+
+        new Thread(() -> {
+            ServerClient client = new ServerClient();
+
+            if (!client.connect("10.0.2.2", 5000)) {
+                Log.d("BORUMT2_CHARACTERS", "Sunucuya baglanilamadi");
+                return;
+            }
+
+            try {
+                JSONObject request = new JSONObject();
+                request.put("command", "LIST_CHARACTERS");
+                request.put("session_token", sessionToken);
+
+                JSONObject response = client.request(request);
+
+                if (response != null && response.optBoolean("ok")) {
+                    JSONArray characters = response.optJSONArray("characters");
+                    int count = characters == null ? 0 : characters.length();
+                    Log.d("BORUMT2_CHARACTERS", "Karakter sayisi: " + count);
+                } else {
+                    Log.d("BORUMT2_CHARACTERS", "Karakter listesi alinamadi");
+                }
+            } catch (Exception e) {
+                Log.d("BORUMT2_CHARACTERS", "Karakter listesi hatasi");
+            } finally {
+                client.close();
+            }
+        }).start();
     }
 
     public boolean onTouchEvent(MotionEvent e) {
@@ -32,20 +79,17 @@ public class GameView extends GLSurfaceView {
 
             if (!moving) {
                 String npc = r.getInteractableNPC();
+
                 if (npc != null) {
                     Log.d("BORUMT2_NPC", "NPC_ETKILESIM: " + npc);
 
                     final String dialogue = r.getNPCDialogue();
+
                     if (dialogue != null) {
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                                new AlertDialog.Builder(getContext())
-                                    .setMessage(dialogue)
-                                    .setPositiveButton("Kapat", null)
-                                    .show();
-                            }
-                        });
+                        post(() -> new AlertDialog.Builder(getContext())
+                                .setMessage(dialogue)
+                                .setPositiveButton("Kapat", null)
+                                .show());
                     }
                 }
             }
@@ -68,7 +112,8 @@ public class GameView extends GLSurfaceView {
             return true;
         }
 
-        if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
+        if (e.getAction() == MotionEvent.ACTION_UP ||
+                e.getAction() == MotionEvent.ACTION_CANCEL) {
             moving = false;
             return true;
         }

@@ -1,0 +1,14 @@
+{
+  "borumt2test": {
+    "username": "borumt2test",
+    "password": "$2a$10$RQkSUCTEsz/s/bDldzbK/uVLkTS28Vw5iz0ek/RXfZk.dEFMJWKnu"
+  },
+  "login_test": {
+    "username": "login_test",
+    "password": "$2a$10$QJcevNhqYxowZjYWh5GXGeTL/DNSK/uR/69AetsLl3l4FAr77lKsC"
+  },
+  "testuser2": {
+    "username": "testuser2",
+    "password": "testpass2"
+  }
+}

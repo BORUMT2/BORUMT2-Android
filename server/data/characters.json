@@ -1,0 +1,29 @@
+{
+  "1789323158463097592": {
+    "id": "1789323158463097592",
+    "name": "TestSavasci",
+    "class": "SAVASCI",
+    "gender": "ERKEK",
+    "level": 10,
+    "yang": 1000000,
+    "account": "borumt2test"
+  },
+  "1789323457574830179": {
+    "id": "1789323457574830179",
+    "name": "A",
+    "class": "SAVASCI",
+    "gender": "ERKEK",
+    "level": 10,
+    "yang": 1000000,
+    "account": "borumt2test"
+  },
+  "1789401718917381334": {
+    "id": "1789401718917381334",
+    "name": "LoginSavasci",
+    "class": "SAVASCI",
+    "gender": "ERKEK",
+    "level": 10,
+    "yang": 1000000,
+    "account": "login_test"
+  }
+}
