@@ -33,6 +33,10 @@ public class GameRenderer implements GLSurfaceView.Renderer {
      return null;
  }
 
+ public Player getPlayer(){
+     return player;
+ }
+
  public String getPlayerInfo(){
      return player.getDisplayName()
          + " | Lv." + player.getLevel()

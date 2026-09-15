@@ -133,10 +133,14 @@ public class GameView extends GLSurfaceView {
                 if (npc != null) {
                     Log.d("BORUMT2_NPC", "NPC_ETKILESIM: " + npc);
 
-                    final String dialogue = r.getNPCDialogue();
+                    if ("Ticaret Yöneticisi".equals(npc)) {
+                        post(() -> TradeManagerMarketDialog.show(getContext(), r.getPlayer()));
+                    } else {
+                        final String dialogue = r.getNPCDialogue();
 
-                    if (dialogue != null) {
-                        post(() -> showNPCDialogue(dialogue));
+                        if (dialogue != null) {
+                            post(() -> showNPCDialogue(dialogue));
+                        }
                     }
                 }
             }
