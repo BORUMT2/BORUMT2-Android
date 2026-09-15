@@ -2,7 +2,19 @@ package com.lumorixgame.borumt2;
 import android.opengl.*; import android.content.Context; import com.lumorixgame.borumt2.model.ObjModel; import javax.microedition.khronos.egl.EGLConfig; import javax.microedition.khronos.opengles.GL10; import java.nio.*;
 public class GameRenderer implements GLSurfaceView.Renderer {
  private String sessionToken; private Context context; private volatile ObjModel characterModel; private volatile ObjModel mapTerrain; private volatile ObjModel mapVillage; private volatile ObjModel mapForest; private volatile ObjModel mapRocks; public void setSessionToken(String token){sessionToken=token; loadCharacterState();}
- float[] p=new float[16],v=new float[16],m=new float[16],mv=new float[16]; float yaw=0,pitch=.12f; long lastFrameTime=0; Player player=new Player(); NPC npc1=new NPC("Ticaret Yöneticisi",-3,0.7f,-3); NPC npc2=new NPC("Emlakçı",3,0.7f,-4); int prog,pos,col,mat;
+ float[] p=new float[16],v=new float[16],m=new float[16],mv=new float[16]; float yaw=0,pitch=.12f; long lastFrameTime=0; Player player=new Player();
+ NPC npc1=new NPC("Ticaret Yöneticisi",-3,0.7f,-3);
+ NPC npc2=new NPC("Emlakçı",3,0.7f,-4);
+ NPC npc3=new NPC("Satıcı",-5,0.7f,-3);
+ NPC npc4=new NPC("Demirci",-5,0.7f,-5);
+ NPC npc5=new NPC("Zırhçı",-7,0.7f,-3);
+ NPC npc6=new NPC("Silahçı",-7,0.7f,-5);
+ NPC npc7=new NPC("Lonca Yöneticisi",5,0.7f,-3);
+ NPC npc8=new NPC("Şehir Bekçisi",7,0.7f,-4);
+ NPC npc9=new NPC("Köy Gardiyanı",7,0.7f,-6);
+ NPC npc10=new NPC("Depocu",5,0.7f,-6);
+ NPC npc11=new NPC("İksirci",3,0.7f,-6);
+ int prog,pos,col,mat;
  FloatBuffer ground;
  private void loadCharacterState(){ if(sessionToken==null||sessionToken.isEmpty()) return; new Thread(()->{ ServerClient client=new ServerClient(); if(!client.connect("10.0.2.2",5000)) return; try{ org.json.JSONObject req=new org.json.JSONObject(); req.put("command","GET_CHARACTER_STATE"); req.put("session_token",sessionToken); org.json.JSONObject res=client.request(req); if(res!=null&&res.optBoolean("ok")){ org.json.JSONObject c=res.optJSONObject("character"); if(c!=null){ player.data.name=c.optString("name",player.data.name); player.data.level=c.optInt("level",player.data.level); player.data.yang=c.optLong("yang",player.data.yang); try{ player.data.characterClass=CharacterClass.valueOf(c.optString("class","SAVASCI")); player.data.gender=Gender.valueOf(c.optString("gender","MALE")); }catch(Exception ignored){}  } } }catch(Exception ignored){} finally{client.close();} }).start(); }
  public GameRenderer(Context context){this.context=context;}
@@ -10,8 +22,14 @@ public class GameRenderer implements GLSurfaceView.Renderer {
  public void move(float dx,float dz){float sx=(float)Math.sin(yaw),cz=(float)Math.cos(yaw);player.move(dx*cz+dz*sx,dx*sx-dz*cz);}
 
  public String getInteractableNPC(){
-     if(npc1.canInteract(player.x,player.z)) return npc1.name;
-     if(npc2.canInteract(player.x,player.z)) return npc2.name;
+     NPC[] npcs = {
+         npc1,npc2,npc3,npc4,npc5,npc6,npc7,npc8,npc9,npc10,npc11
+     };
+
+     for(NPC npc : npcs){
+         if(npc.canInteract(player.x,player.z)) return npc.name;
+     }
+
      return null;
  }
 
@@ -26,15 +44,43 @@ public class GameRenderer implements GLSurfaceView.Renderer {
      String npc = getInteractableNPC();
      if(npc == null) return null;
 
-     if(npc.equals(npc1.name)){
-         return "Ticaret Yöneticisi\\n\\nHoş geldin! Ticaret işlemleri için buradayım.";
-     }
+     switch(npc){
+         case "Ticaret Yöneticisi":
+             return "Ticaret Yöneticisi\\n\\nTicaret işlemleri ve özel malzemeler için buradayım.";
 
-     if(npc.equals(npc2.name)){
-         return "Emlakçı\\n\\nLonca arsaları ve emlak işlemleri hakkında yardımcı olabilirim.";
-     }
+         case "Emlakçı":
+             return "Emlakçı\\n\\nLonca arsaları ve emlak işlemleri hakkında yardımcı olabilirim.";
 
-     return null;
+         case "Satıcı":
+             return "Satıcı\\n\\nİhtiyacın olan temel eşyaları burada bulabilirsin.";
+
+         case "Demirci":
+             return "Demirci\\n\\nEşyalarını yükseltmek için hazırım.";
+
+         case "Zırhçı":
+             return "Zırhçı\\n\\nSavaş için gerekli zırh ve ekipmanlar burada.";
+
+         case "Silahçı":
+             return "Silahçı\\n\\nSavaşçılar için çeşitli silahlarım var.";
+
+         case "Lonca Yöneticisi":
+             return "Lonca Yöneticisi\\n\\nLonca kurma ve lonca işlemleri hakkında yardımcı olabilirim.";
+
+         case "Şehir Bekçisi":
+             return "Şehir Bekçisi\\n\\nŞehir düzeninden ve şehir girişlerinden sorumluyum.";
+
+         case "Köy Gardiyanı":
+             return "Köy Gardiyanı\\n\\nKöy ve çevresi hakkında bilgi verebilirim.";
+
+         case "Depocu":
+             return "Depocu\\n\\nEşyalarını güvenle depolayabilirsin.";
+
+         case "İksirci":
+             return "İksirci\\n\\nCan ve diğer ihtiyaçların için iksirlerim var.";
+
+         default:
+             return npc;
+     }
  }
  public void onSurfaceCreated(GL10 g,EGLConfig c){
      GLES20.glClearColor(.52f,.68f,.82f,1);
@@ -93,7 +139,18 @@ public class GameRenderer implements GLSurfaceView.Renderer {
      deltaTime = Math.min(deltaTime, 0.05f);
      player.update(deltaTime);
 
-     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);float cx=(float)Math.sin(yaw)*7,cz=(float)Math.cos(yaw)*7,cy=3.2f+pitch*2;Matrix.setLookAtM(v,0,player.x+cx,cy,player.z+cz,player.x,1,player.z,0,1,0);drawMap();drawCharacterModel(player.x,0,player.z);cube(npc1.x,npc1.y,npc1.z,.5f,.7f,.35f,.55f,.45f,.72f);cube(npc2.x,npc2.y,npc2.z,.5f,.7f,.35f,.55f,.45f,.72f);}
+     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);float cx=(float)Math.sin(yaw)*7,cz=(float)Math.cos(yaw)*7,cy=3.2f+pitch*2;Matrix.setLookAtM(v,0,player.x+cx,cy,player.z+cz,player.x,1,player.z,0,1,0);drawMap();drawCharacterModel(player.x,0,player.z);
+     cube(npc1.x,npc1.y,npc1.z,.5f,.7f,.35f,.55f,.45f,.72f);
+     cube(npc2.x,npc2.y,npc2.z,.5f,.7f,.35f,.55f,.45f,.72f);
+     cube(npc3.x,npc3.y,npc3.z,.5f,.7f,.35f,.72f,.55f,.30f);
+     cube(npc4.x,npc4.y,npc4.z,.5f,.7f,.35f,.45f,.45f,.45f);
+     cube(npc5.x,npc5.y,npc5.z,.5f,.7f,.35f,.30f,.40f,.72f);
+     cube(npc6.x,npc6.y,npc6.z,.5f,.7f,.35f,.55f,.35f,.20f);
+     cube(npc7.x,npc7.y,npc7.z,.5f,.7f,.35f,.55f,.30f,.65f);
+     cube(npc8.x,npc8.y,npc8.z,.5f,.7f,.35f,.35f,.35f,.35f);
+     cube(npc9.x,npc9.y,npc9.z,.5f,.7f,.35f,.25f,.50f,.30f);
+     cube(npc10.x,npc10.y,npc10.z,.5f,.7f,.35f,.55f,.35f,.18f);
+     cube(npc11.x,npc11.y,npc11.z,.5f,.7f,.35f,.20f,.55f,.45f);}
  void drawMap(){
      Matrix.setIdentityM(m,0);
 
