@@ -23,12 +23,11 @@ public class TradeManagerShop {
             return false;
         }
 
-        if (player.getInventory().isFull()) {
+        if (!player.getInventory().addItem(material)) {
             return false;
         }
 
         player.data.yang -= price;
-        player.getInventory().addItem(material);
 
         return true;
     }
