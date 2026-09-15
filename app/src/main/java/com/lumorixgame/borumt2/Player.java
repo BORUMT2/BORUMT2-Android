@@ -66,8 +66,15 @@ public class Player {
     }
 
     public void move(float dx, float dz) {
-        targetX += dx * moveSpeed;
-        targetZ += dz * moveSpeed;
+        float newTargetX = targetX + dx * moveSpeed;
+        float newTargetZ = targetZ + dz * moveSpeed;
+
+        // Starter Valley harita sınırları.
+        newTargetX = Math.max(-18f, Math.min(18f, newTargetX));
+        newTargetZ = Math.max(-18f, Math.min(18f, newTargetZ));
+
+        targetX = newTargetX;
+        targetZ = newTargetZ;
         if (Math.abs(dx) + Math.abs(dz) > 0.001f) {
             rotation = (float)Math.atan2(dx, dz);
         }
