@@ -29,6 +29,7 @@ public class GameView extends GLSurfaceView {
         this.sessionToken = sessionToken;
         loadCharacters();
         loadCharacterState();
+        r.setSessionToken(sessionToken);
     }
 
     private void loadCharacters() {
