@@ -2,9 +2,14 @@ package com.lumorixgame.borumt2;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.Gravity;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,6 +21,8 @@ public class GameView extends GLSurfaceView {
     private float lastX, lastY;
     private float touchStartX, touchStartY;
     private boolean moving;
+
+    private AlertDialog npcDialog;
 
     public GameView(Context c) {
         super(c);
@@ -67,6 +74,48 @@ public class GameView extends GLSurfaceView {
         }).start();
     }
 
+    private void showNPCDialogue(String dialogue) {
+        if (npcDialog != null && npcDialog.isShowing()) {
+            return;
+        }
+
+        String[] parts = dialogue.split("\\\\n\\\\n", 2);
+        String title = parts.length > 0 ? parts[0] : "NPC";
+        String message = parts.length > 1 ? parts[1] : dialogue;
+
+        LinearLayout layout = new LinearLayout(getContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(32, 24, 32, 16);
+
+        TextView titleView = new TextView(getContext());
+        titleView.setText(title);
+        titleView.setTextSize(20);
+        titleView.setTextColor(Color.rgb(90, 55, 25));
+        titleView.setGravity(Gravity.CENTER_HORIZONTAL);
+
+        TextView messageView = new TextView(getContext());
+        messageView.setText(message);
+        messageView.setTextSize(16);
+        messageView.setTextColor(Color.DKGRAY);
+        messageView.setPadding(0, 20, 0, 20);
+
+        Button closeButton = new Button(getContext());
+        closeButton.setText("Kapat");
+
+        layout.addView(titleView);
+        layout.addView(messageView);
+        layout.addView(closeButton);
+
+        npcDialog = new AlertDialog.Builder(getContext())
+                .setView(layout)
+                .create();
+
+        closeButton.setOnClickListener(v -> npcDialog.dismiss());
+
+        npcDialog.setOnDismissListener(d -> npcDialog = null);
+        npcDialog.show();
+    }
+
     public boolean onTouchEvent(MotionEvent e) {
         float x = e.getX();
         float y = e.getY();
@@ -87,10 +136,7 @@ public class GameView extends GLSurfaceView {
                     final String dialogue = r.getNPCDialogue();
 
                     if (dialogue != null) {
-                        post(() -> new AlertDialog.Builder(getContext())
-                                .setMessage(dialogue)
-                                .setPositiveButton("Kapat", null)
-                                .show());
+                        post(() -> showNPCDialogue(dialogue));
                     }
                 }
             }
