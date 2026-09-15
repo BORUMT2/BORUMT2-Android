@@ -43,6 +43,7 @@ public class TradeManagerMarketDialog {
             Button button = new Button(context);
             button.setText(
                     item.name + "\n" +
+                    "6 adet — " +
                     String.format("%,d Yang", item.yangValue)
             );
 

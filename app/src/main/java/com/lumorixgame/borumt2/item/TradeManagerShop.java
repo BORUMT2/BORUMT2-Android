@@ -25,7 +25,7 @@ public class TradeManagerShop {
             return false;
         }
 
-        long price = material.yangValue * quantity;
+        long price = material.yangValue;
 
         if (player.getYang() < price) {
             return false;

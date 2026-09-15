@@ -5,6 +5,7 @@ public class Item {
     public int level;
     public int plus;
     public long yangValue;
+    public int quantity;
     public ItemType type;
     public long epPrice;
     public boolean marketTradable;
@@ -19,6 +20,7 @@ public class Item {
         this.level = level;
         this.plus = plus;
         this.yangValue = yangValue;
+        this.quantity = 1;
         this.type = ItemType.NORMAL_ITEM;
         this.epPrice = 0;
         this.marketTradable = false;
