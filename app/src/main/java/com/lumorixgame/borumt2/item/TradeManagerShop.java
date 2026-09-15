@@ -5,6 +5,10 @@ import com.lumorixgame.borumt2.Player;
 public class TradeManagerShop {
 
     public static boolean buyUpgradeMaterial(Player player, int materialIndex) {
+        return buyUpgradeMaterial(player, materialIndex, 6);
+    }
+
+    public static boolean buyUpgradeMaterial(Player player, int materialIndex, int quantity) {
         if (player == null) {
             return false;
         }
@@ -17,13 +21,27 @@ public class TradeManagerShop {
 
         Item material = materials[materialIndex];
 
-        long price = material.yangValue;
+        if (quantity != 6) {
+            return false;
+        }
+
+        long price = material.yangValue * quantity;
 
         if (player.getYang() < price) {
             return false;
         }
 
-        if (!player.getInventory().addItem(material)) {
+        Item packageItem = new Item(
+                material.name,
+                material.level,
+                material.plus,
+                material.yangValue
+        );
+        packageItem.type = material.type;
+        packageItem.marketTradable = material.marketTradable;
+        packageItem.quantity = quantity;
+
+        if (!player.getInventory().addItem(packageItem)) {
             return false;
         }
 
