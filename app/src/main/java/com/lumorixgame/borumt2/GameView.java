@@ -32,6 +32,12 @@ public class GameView extends GLSurfaceView {
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
 
+    public void returnToCity() {
+        if (r != null && r.getPlayer() != null) {
+            r.getPlayer().returnToCity();
+        }
+    }
+
     public void setSessionToken(String sessionToken) {
         this.sessionToken = sessionToken;
         loadCharacters();

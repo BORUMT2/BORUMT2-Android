@@ -57,6 +57,14 @@ public class Player {
     public float targetX = 0f;
     public float targetZ = 0f;
 
+    public void returnToCity() {
+        x = 0f;
+        z = 0f;
+        targetX = 0f;
+        targetZ = 0f;
+        rotation = 0f;
+    }
+
     public void move(float dx, float dz) {
         targetX += dx * moveSpeed;
         targetZ += dz * moveSpeed;
