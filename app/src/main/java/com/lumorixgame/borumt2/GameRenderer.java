@@ -1,7 +1,7 @@
 package com.lumorixgame.borumt2;
 import android.opengl.*; import android.content.Context; import com.lumorixgame.borumt2.model.ObjModel; import javax.microedition.khronos.egl.EGLConfig; import javax.microedition.khronos.opengles.GL10; import java.nio.*;
 public class GameRenderer implements GLSurfaceView.Renderer {
- private String sessionToken; private Context context; private ObjModel testModel; public void setSessionToken(String token){sessionToken=token; loadCharacterState();} 
+ private String sessionToken; private Context context; private volatile ObjModel characterModel; public void setSessionToken(String token){sessionToken=token; loadCharacterState();}
  float[] p=new float[16],v=new float[16],m=new float[16],mv=new float[16]; float yaw=0,pitch=.12f; long lastFrameTime=0; Player player=new Player(); NPC npc1=new NPC("Ticaret Yöneticisi",-3,0.7f,-3); NPC npc2=new NPC("Emlakçı",3,0.7f,-4); int prog,pos,col,mat;
  FloatBuffer ground;
  private void loadCharacterState(){ if(sessionToken==null||sessionToken.isEmpty()) return; new Thread(()->{ ServerClient client=new ServerClient(); if(!client.connect("10.0.2.2",5000)) return; try{ org.json.JSONObject req=new org.json.JSONObject(); req.put("command","GET_CHARACTER_STATE"); req.put("session_token",sessionToken); org.json.JSONObject res=client.request(req); if(res!=null&&res.optBoolean("ok")){ org.json.JSONObject c=res.optJSONObject("character"); if(c!=null){ player.data.name=c.optString("name",player.data.name); player.data.level=c.optInt("level",player.data.level); player.data.yang=c.optLong("yang",player.data.yang); try{ player.data.characterClass=CharacterClass.valueOf(c.optString("class","SAVASCI")); player.data.gender=Gender.valueOf(c.optString("gender","MALE")); }catch(Exception ignored){}  } } }catch(Exception ignored){} finally{client.close();} }).start(); }
@@ -66,9 +66,14 @@ public class GameRenderer implements GLSurfaceView.Renderer {
      ground=buf(q);
 
      try {
-         testModel=ObjModel.load(context,"characters/savasci/erkek/test.obj");
+         String modelPath = getCharacterModelPath();
+         characterModel = ObjModel.load(context, modelPath);
+         android.util.Log.d("BORUMT2_MODEL", "Model yüklendi: " + modelPath
+                 + " vertices=" + characterModel.vertexCount);
      } catch(Exception e) {
-         testModel=null;
+         characterModel = null;
+         android.util.Log.e("BORUMT2_MODEL", "Model yüklenemedi: "
+                 + getCharacterModelPath(), e);
      }
  }
  int sh(int t,String s){int x=GLES20.glCreateShader(t);GLES20.glShaderSource(x,s);GLES20.glCompileShader(x);return x;}
@@ -81,17 +86,25 @@ public class GameRenderer implements GLSurfaceView.Renderer {
      deltaTime = Math.min(deltaTime, 0.05f);
      player.update(deltaTime);
 
-     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);float cx=(float)Math.sin(yaw)*7,cz=(float)Math.cos(yaw)*7,cy=3.2f+pitch*2;Matrix.setLookAtM(v,0,player.x+cx,cy,player.z+cz,player.x,1,player.z,0,1,0);drawTestModel(player.x,0,player.z);cube(npc1.x,npc1.y,npc1.z,.5f,.7f,.35f,.55f,.45f,.72f);cube(npc2.x,npc2.y,npc2.z,.5f,.7f,.35f,.55f,.45f,.72f);cube(npc1.x,npc1.y,npc1.z,.5f,.7f,.35f,.55f,.45f,.72f);cube(npc2.x,npc2.y,npc2.z,.5f,.7f,.35f,.55f,.45f,.72f);ground();}
+     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);float cx=(float)Math.sin(yaw)*7,cz=(float)Math.cos(yaw)*7,cy=3.2f+pitch*2;Matrix.setLookAtM(v,0,player.x+cx,cy,player.z+cz,player.x,1,player.z,0,1,0);drawCharacterModel(player.x,0,player.z);cube(npc1.x,npc1.y,npc1.z,.5f,.7f,.35f,.55f,.45f,.72f);cube(npc2.x,npc2.y,npc2.z,.5f,.7f,.35f,.55f,.45f,.72f);ground();}
  void ground(){Matrix.setIdentityM(m,0);draw(ground,6,.28f,.45f,.25f);}
 
- void drawTestModel(float x,float y,float z){
-     if(testModel==null) return;
+ private String getCharacterModelPath(){
+     String cls=player.data.characterClass.name().toLowerCase();
+     String gender=player.data.gender==Gender.FEMALE ? "kadin" : "erkek";
+
+     return "characters/"+cls+"/"+gender+"/character.obj";
+ }
+
+ void drawCharacterModel(float x,float y,float z){
+     if(characterModel==null) return;
 
      Matrix.setIdentityM(m,0);
      Matrix.translateM(m,0,x,y,z);
      Matrix.scaleM(m,0,1.2f,1.2f,1.2f);
 
-     draw(testModel.vertices,testModel.vertexCount,0.72f,0.48f,0.20f);
+     draw(characterModel.vertices,characterModel.vertexCount,
+             0.72f,0.48f,0.20f);
  }
 
  void cube(float x,float y,float z,float sx,float sy,float sz,float rr,float gg,float bb){float[] q={-1,-1,1,1,-1,1,-1,1,1,1,1,1,-1,-1,-1,-1,1,-1,1,-1,-1,1,1,-1};short[] ix={0,1,2,1,3,2,1,6,3,6,7,3,6,4,7,4,5,7,4,0,5,0,2,5,2,3,5,3,7,5,4,6,0,6,1,0};FloatBuffer b=buf(q);ByteBuffer ib=ByteBuffer.allocateDirect(ix.length*2).order(ByteOrder.nativeOrder());ib.asShortBuffer().put(ix).position(0);Matrix.setIdentityM(m,0);Matrix.translateM(m,0,x,y,z);Matrix.scaleM(m,0,sx,sy,sz);draw(b,36,rr,gg,bb,ib);}
