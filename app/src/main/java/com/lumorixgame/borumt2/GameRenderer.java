@@ -1,7 +1,7 @@
 package com.lumorixgame.borumt2;
 import android.opengl.*; import android.content.Context; import com.lumorixgame.borumt2.model.ObjModel; import javax.microedition.khronos.egl.EGLConfig; import javax.microedition.khronos.opengles.GL10; import java.nio.*;
 public class GameRenderer implements GLSurfaceView.Renderer {
- private String sessionToken; private Context context; private volatile ObjModel characterModel; public void setSessionToken(String token){sessionToken=token; loadCharacterState();}
+ private String sessionToken; private Context context; private volatile ObjModel characterModel; private volatile ObjModel mapTerrain; private volatile ObjModel mapVillage; private volatile ObjModel mapForest; private volatile ObjModel mapRocks; public void setSessionToken(String token){sessionToken=token; loadCharacterState();}
  float[] p=new float[16],v=new float[16],m=new float[16],mv=new float[16]; float yaw=0,pitch=.12f; long lastFrameTime=0; Player player=new Player(); NPC npc1=new NPC("Ticaret Yöneticisi",-3,0.7f,-3); NPC npc2=new NPC("Emlakçı",3,0.7f,-4); int prog,pos,col,mat;
  FloatBuffer ground;
  private void loadCharacterState(){ if(sessionToken==null||sessionToken.isEmpty()) return; new Thread(()->{ ServerClient client=new ServerClient(); if(!client.connect("10.0.2.2",5000)) return; try{ org.json.JSONObject req=new org.json.JSONObject(); req.put("command","GET_CHARACTER_STATE"); req.put("session_token",sessionToken); org.json.JSONObject res=client.request(req); if(res!=null&&res.optBoolean("ok")){ org.json.JSONObject c=res.optJSONObject("character"); if(c!=null){ player.data.name=c.optString("name",player.data.name); player.data.level=c.optInt("level",player.data.level); player.data.yang=c.optLong("yang",player.data.yang); try{ player.data.characterClass=CharacterClass.valueOf(c.optString("class","SAVASCI")); player.data.gender=Gender.valueOf(c.optString("gender","MALE")); }catch(Exception ignored){}  } } }catch(Exception ignored){} finally{client.close();} }).start(); }
@@ -70,6 +70,13 @@ public class GameRenderer implements GLSurfaceView.Renderer {
          characterModel = ObjModel.load(context, modelPath);
          android.util.Log.d("BORUMT2_MODEL", "Model yüklendi: " + modelPath
                  + " vertices=" + characterModel.vertexCount);
+
+         mapTerrain = ObjModel.load(context, "map/terrain.obj");
+         mapVillage = ObjModel.load(context, "map/village.obj");
+         mapForest = ObjModel.load(context, "map/forest.obj");
+         mapRocks = ObjModel.load(context, "map/rocks.obj");
+
+         android.util.Log.d("BORUMT2_MAP", "Harita modelleri yüklendi");
      } catch(Exception e) {
          characterModel = null;
          android.util.Log.e("BORUMT2_MODEL", "Model yüklenemedi: "
@@ -86,7 +93,23 @@ public class GameRenderer implements GLSurfaceView.Renderer {
      deltaTime = Math.min(deltaTime, 0.05f);
      player.update(deltaTime);
 
-     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);float cx=(float)Math.sin(yaw)*7,cz=(float)Math.cos(yaw)*7,cy=3.2f+pitch*2;Matrix.setLookAtM(v,0,player.x+cx,cy,player.z+cz,player.x,1,player.z,0,1,0);drawCharacterModel(player.x,0,player.z);cube(npc1.x,npc1.y,npc1.z,.5f,.7f,.35f,.55f,.45f,.72f);cube(npc2.x,npc2.y,npc2.z,.5f,.7f,.35f,.55f,.45f,.72f);ground();}
+     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);float cx=(float)Math.sin(yaw)*7,cz=(float)Math.cos(yaw)*7,cy=3.2f+pitch*2;Matrix.setLookAtM(v,0,player.x+cx,cy,player.z+cz,player.x,1,player.z,0,1,0);drawMap();drawCharacterModel(player.x,0,player.z);cube(npc1.x,npc1.y,npc1.z,.5f,.7f,.35f,.55f,.45f,.72f);cube(npc2.x,npc2.y,npc2.z,.5f,.7f,.35f,.55f,.45f,.72f);}
+ void drawMap(){
+     Matrix.setIdentityM(m,0);
+
+     if(mapTerrain!=null)
+         draw(mapTerrain.vertices,mapTerrain.vertexCount,0.28f,0.45f,0.25f);
+
+     if(mapVillage!=null)
+         draw(mapVillage.vertices,mapVillage.vertexCount,0.48f,0.31f,0.16f);
+
+     if(mapForest!=null)
+         draw(mapForest.vertices,mapForest.vertexCount,0.12f,0.38f,0.12f);
+
+     if(mapRocks!=null)
+         draw(mapRocks.vertices,mapRocks.vertexCount,0.34f,0.34f,0.34f);
+ }
+
  void ground(){Matrix.setIdentityM(m,0);draw(ground,6,.28f,.45f,.25f);}
 
  private String getCharacterModelPath(){

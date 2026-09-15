@@ -6,3 +6,6 @@ local.properties
 *.keystore
 *.apk
 *.aab
+
+# Local map package archive
+borumt2-map-pack.zip
