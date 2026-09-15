@@ -47,13 +47,33 @@ public class TradeManagerMarketDialog {
             );
 
             button.setOnClickListener(v -> {
-                boolean success =
-                        com.lumorixgame.borumt2.item.TradeManagerShop
-                                .buyUpgradeMaterial(player, index);
+                new AlertDialog.Builder(context)
+                        .setTitle("Satın Al")
+                        .setMessage(
+                                item.name + "\n\n" +
+                                "Fiyat: " +
+                                String.format("%,d Yang", item.yangValue) +
+                                "\n\nSatın almak istiyor musun?"
+                        )
+                        .setNegativeButton("Vazgeç", null)
+                        .setPositiveButton("Satın Al", (dialog, which) -> {
+                            boolean success =
+                                    com.lumorixgame.borumt2.item.TradeManagerShop
+                                            .buyUpgradeMaterial(player, index);
 
-                if (success) {
-                    yang.setText("Yang: " + player.getYang());
-                }
+                            if (success) {
+                                yang.setText("Yang: " + player.getYang());
+                            } else {
+                                new AlertDialog.Builder(context)
+                                        .setTitle("Satın Alınamadı")
+                                        .setMessage(
+                                                "Yeterli Yang veya envanter alanı yok."
+                                        )
+                                        .setPositiveButton("Tamam", null)
+                                        .show();
+                            }
+                        })
+                        .show();
             });
 
             materialList.addView(button);
