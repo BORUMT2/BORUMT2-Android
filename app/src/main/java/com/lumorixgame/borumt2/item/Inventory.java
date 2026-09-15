@@ -25,6 +25,22 @@ public class Inventory {
     public boolean addItem(Item item) {
         if (item == null) return false;
 
+        // Aynı eşya varsa stack yap.
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            Item existing = slots[i];
+
+            if (existing != null
+                    && existing.name.equals(item.name)
+                    && existing.level == item.level
+                    && existing.plus == item.plus
+                    && existing.type == item.type) {
+
+                existing.quantity += item.quantity;
+                return true;
+            }
+        }
+
+        // Boş slota ekle.
         for (int i = 0; i < SLOT_COUNT; i++) {
             if (slots[i] == null) {
                 slots[i] = item;
