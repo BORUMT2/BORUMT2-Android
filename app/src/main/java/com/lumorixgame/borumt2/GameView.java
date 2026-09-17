@@ -32,6 +32,10 @@ public class GameView extends GLSurfaceView {
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
 
+    public GameRenderer getRenderer() {
+        return r;
+    }
+
     public void returnToCity() {
         if (r != null && r.getPlayer() != null) {
             r.getPlayer().returnToCity();
@@ -134,18 +138,29 @@ public class GameView extends GLSurfaceView {
             moving = x < getWidth() * 0.45f;
 
             if (!moving) {
-                String npc = r.getInteractableNPC();
 
-                if (npc != null) {
-                    Log.d("BORUMT2_NPC", "NPC_ETKILESIM: " + npc);
+                // Önce yakındaki mob hedeflenir.
+                if (r.attackNearestMob()) {
+                    Log.d("BORUMT2_COMBAT", "MOB_SALDIRISI");
+                } else {
 
-                    if ("Ticaret Yöneticisi".equals(npc)) {
-                        post(() -> TradeManagerMarketDialog.show(getContext(), r.getPlayer()));
-                    } else {
-                        final String dialogue = r.getNPCDialogue();
+                    // Yakında mob yoksa normal NPC etkileşimi.
+                    String npc = r.getInteractableNPC();
 
-                        if (dialogue != null) {
-                            post(() -> showNPCDialogue(dialogue));
+                    if (npc != null) {
+                        Log.d("BORUMT2_NPC", "NPC_ETKILESIM: " + npc);
+
+                        if ("Ticaret Yöneticisi".equals(npc)) {
+                            post(() -> TradeManagerMarketDialog.show(
+                                    getContext(),
+                                    r.getPlayer()
+                            ));
+                        } else {
+                            final String dialogue = r.getNPCDialogue();
+
+                            if (dialogue != null) {
+                                post(() -> showNPCDialogue(dialogue));
+                            }
                         }
                     }
                 }

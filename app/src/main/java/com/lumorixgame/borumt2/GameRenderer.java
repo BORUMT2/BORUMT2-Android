@@ -14,6 +14,37 @@ public class GameRenderer implements GLSurfaceView.Renderer {
  NPC npc9=new NPC("Köy Gardiyanı",7,0.7f,-6);
  NPC npc10=new NPC("Depocu",5,0.7f,-6);
  NPC npc11=new NPC("İksirci",3,0.7f,-6);
+
+ // Metin2 tarzı başlangıç bölgesi mobları.
+ private final Mob mob1 = new Mob(
+         "Yabani Köpek", Mob.Type.NORMAL,
+         10, -13f, 0.5f, -12f,
+         250, 25, 10, 50, 100
+ );
+
+ private final Mob mob2 = new Mob(
+         "Yabani Köpek", Mob.Type.NORMAL,
+         10, -10f, 0.5f, -14f,
+         250, 25, 10, 50, 100
+ );
+
+ private final Mob mob3 = new Mob(
+         "Yabani Köpek", Mob.Type.NORMAL,
+         11, -14f, 0.5f, -15f,
+         300, 30, 12, 65, 120
+ );
+
+ private final Mob mob4 = new Mob(
+         "Yabani Köpek", Mob.Type.NORMAL,
+         11, -8f, 0.5f, -12f,
+         300, 30, 12, 65, 120
+ );
+
+ private final Mob[] mobs = {mob1, mob2, mob3, mob4};
+
+ private Mob selectedMob = null;
+ private long lastMobAttackTime = 0L;
+
  int prog,pos,col,mat;
  FloatBuffer ground;
  private void loadCharacterState(){ if(sessionToken==null||sessionToken.isEmpty()) return; new Thread(()->{ ServerClient client=new ServerClient(); if(!client.connect("10.0.2.2",5000)) return; try{ org.json.JSONObject req=new org.json.JSONObject(); req.put("command","GET_CHARACTER_STATE"); req.put("session_token",sessionToken); org.json.JSONObject res=client.request(req); if(res!=null&&res.optBoolean("ok")){ org.json.JSONObject c=res.optJSONObject("character"); if(c!=null){ player.data.name=c.optString("name",player.data.name); player.data.level=c.optInt("level",player.data.level); player.data.yang=c.optLong("yang",player.data.yang); try{ player.data.characterClass=CharacterClass.valueOf(c.optString("class","SAVASCI")); player.data.gender=Gender.valueOf(c.optString("gender","MALE")); }catch(Exception ignored){}  } } }catch(Exception ignored){} finally{client.close();} }).start(); }
@@ -35,6 +66,109 @@ public class GameRenderer implements GLSurfaceView.Renderer {
 
  public Player getPlayer(){
      return player;
+ }
+
+ private Mob findNearestMob(){
+     Mob nearest = null;
+     float best = Float.MAX_VALUE;
+
+     for(Mob mob : mobs){
+         if(!mob.isAlive()) continue;
+
+         float d = mob.distanceTo(player.x, player.z);
+
+         if(d < best){
+             best = d;
+             nearest = mob;
+         }
+     }
+
+     return nearest;
+ }
+
+ public Mob getSelectedMob(){
+     return selectedMob;
+ }
+
+
+ public boolean attackNearestMob(){
+     Mob target = findNearestMob();
+
+     if(target == null) return false;
+
+     if(target.distanceTo(player.x, player.z) > 3.2f){
+         selectedMob = target;
+         return false;
+     }
+
+     selectedMob = target;
+
+     int damage = target.receiveDamage(
+                Math.max(1, player.data.attackPower)
+        );
+
+     android.util.Log.d(
+             "BORUMT2_COMBAT",
+             "Oyuncu -> " + target.name + " hasar=" + damage + " HP=" + target.hp
+     );
+
+     if(!target.isAlive()){
+         player.data.exp += target.expReward;
+         player.data.yang += target.yangReward;
+
+         android.util.Log.d(
+                 "BORUMT2_COMBAT",
+                 target.name + " öldü | EXP=" + target.expReward
+                         + " | Yang=" + target.yangReward
+                         + " | Toplam EXP=" + player.data.exp
+                         + " | Toplam Yang=" + player.data.yang
+         );
+
+         selectedMob = null;
+     }
+
+     return true;
+ }
+
+ private void updateMobCombat(long now){
+     if(selectedMob == null || !selectedMob.isAlive()) return;
+
+     float distance = selectedMob.distanceTo(player.x, player.z);
+
+     // Mob oyuncudan uzaktaysa saldırmasın.
+     if(distance > 2.8f) return;
+
+     // Mob saniyede bir kez saldırır.
+     if(lastMobAttackTime != 0L && now - lastMobAttackTime < 1000L) return;
+
+     lastMobAttackTime = now;
+
+     int damage = Math.max(
+             1,
+             selectedMob.attackPower - player.data.defense
+     );
+
+     player.data.hp = Math.max(
+             0,
+             player.data.hp - damage
+     );
+
+     android.util.Log.d(
+             "BORUMT2_COMBAT",
+             selectedMob.name + " -> oyuncu hasar=" + damage
+                     + " HP=" + player.data.hp
+     );
+
+     if(player.data.hp <= 0){
+         player.data.hp = player.data.maxHp;
+         player.returnToCity();
+         selectedMob = null;
+
+         android.util.Log.d(
+                 "BORUMT2_COMBAT",
+                 "Oyuncu öldü, şehre döndü."
+         );
+     }
  }
 
  public String getPlayerInfo(){
@@ -137,13 +271,31 @@ public class GameRenderer implements GLSurfaceView.Renderer {
  FloatBuffer buf(float[] a){FloatBuffer b=ByteBuffer.allocateDirect(a.length*4).order(ByteOrder.nativeOrder()).asFloatBuffer();b.put(a).position(0);return b;}
  public void onSurfaceChanged(GL10 g,int w,int h){GLES20.glViewport(0,0,w,h);Matrix.perspectiveM(p,0,55,(float)w/h,.1f,100);}
  public void onDrawFrame(GL10 g){
-     long now = System.nanoTime();
+     long now = System.currentTimeMillis();
      float deltaTime = lastFrameTime == 0 ? 0f : (now - lastFrameTime) / 1000000000f;
      lastFrameTime = now;
      deltaTime = Math.min(deltaTime, 0.05f);
      player.update(deltaTime);
+     updateMobCombat(now);
 
-     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);float cx=(float)Math.sin(yaw)*7,cz=(float)Math.cos(yaw)*7,cy=3.2f+pitch*2;Matrix.setLookAtM(v,0,player.x+cx,cy,player.z+cz,player.x,1,player.z,0,1,0);drawMap();drawCharacterModel(player.x,0,player.z);
+     GLES20.glClear(
+             GLES20.GL_COLOR_BUFFER_BIT |
+             GLES20.GL_DEPTH_BUFFER_BIT
+     );
+
+     float cx=(float)Math.sin(yaw)*7;
+     float cz=(float)Math.cos(yaw)*7;
+     float cy=3.2f+pitch*2;
+
+     Matrix.setLookAtM(
+             v,0,
+             player.x+cx,cy,player.z+cz,
+             player.x,1,player.z,
+             0,1,0
+     );
+
+     drawMap();
+     drawCharacterModel(player.x,0,player.z);
      cube(npc1.x,npc1.y,npc1.z,.5f,.7f,.35f,.55f,.45f,.72f);
      cube(npc2.x,npc2.y,npc2.z,.5f,.7f,.35f,.55f,.45f,.72f);
      cube(npc3.x,npc3.y,npc3.z,.5f,.7f,.35f,.72f,.55f,.30f);
@@ -154,7 +306,31 @@ public class GameRenderer implements GLSurfaceView.Renderer {
      cube(npc8.x,npc8.y,npc8.z,.5f,.7f,.35f,.35f,.35f,.35f);
      cube(npc9.x,npc9.y,npc9.z,.5f,.7f,.35f,.25f,.50f,.30f);
      cube(npc10.x,npc10.y,npc10.z,.5f,.7f,.35f,.55f,.35f,.18f);
-     cube(npc11.x,npc11.y,npc11.z,.5f,.7f,.35f,.20f,.55f,.45f);}
+     cube(npc11.x,npc11.y,npc11.z,.5f,.7f,.35f,.20f,.55f,.45f);
+     // Moblar.
+     for(Mob mob : mobs){
+         if(!mob.isAlive()) continue;
+
+         float rr = mob.isBoss() ? .65f : .55f;
+         float gg = mob.isMetin() ? .55f : .25f;
+         float bb = mob.isMetin() ? .20f : .15f;
+
+         cube(
+                 mob.x, mob.y, mob.z,
+                 .45f,.55f,.45f,
+                 rr,gg,bb
+         );
+
+         // Seçili mobu biraz daha büyük çizerek hedefi belli et.
+         if(mob == selectedMob){
+             cube(
+                     mob.x, mob.y + .75f, mob.z,
+                     .52f,.08f,.52f,
+                     1.0f,0.85f,0.10f
+             );
+         }
+     }
+ }
  void drawMap(){
      Matrix.setIdentityM(m,0);
 

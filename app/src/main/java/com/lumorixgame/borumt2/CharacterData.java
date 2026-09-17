@@ -16,7 +16,16 @@ public class CharacterData {
     }
 
     public int level = 10;
+    public long exp = 0L;
     public long yang = 1000000L;
+
+    // Temel savaş istatistikleri.
+    public int maxHp = 1000;
+    public int hp = 1000;
+    public int attackPower = 100;
+    public int defense = 50;
+
+
     public Item[] startingItems;
 
     public CharacterData(String name, CharacterClass characterClass, Gender gender) {
