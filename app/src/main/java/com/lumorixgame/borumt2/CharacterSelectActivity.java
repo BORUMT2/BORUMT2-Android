@@ -1,6 +1,7 @@
 package com.lumorixgame.borumt2;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -66,5 +67,9 @@ public class CharacterSelectActivity extends Activity {
             }
           }).start();
     }
-    private void selectCharacter(String characterId) { new Thread(() -> { ServerClient client = new ServerClient(); if (!client.connect("10.0.2.2", 5000)) { runOnUiThread(() -> Toast.makeText(this, "Sunucuya bağlanılamadı", Toast.LENGTH_LONG).show()); return; } try { JSONObject request = new JSONObject(); request.put("command", "SELECT_CHARACTER"); request.put("session_token", sessionToken); request.put("character_id", characterId); JSONObject response = client.request(request); client.close(); if (response != null && response.optBoolean("ok")) { runOnUiThread(() -> { Toast.makeText(this, "Karakter seçildi", Toast.LENGTH_SHORT).show(); startActivity(new android.content.Intent(this, MainActivity.class)); finish(); }); } else { runOnUiThread(() -> Toast.makeText(this, "Karakter seçilemedi", Toast.LENGTH_LONG).show()); } } catch (Exception e) { client.close(); runOnUiThread(() -> Toast.makeText(this, "Karakter seçim hatası", Toast.LENGTH_LONG).show()); } }).start(); }
+    private void selectCharacter(String characterId) { new Thread(() -> { ServerClient client = new ServerClient(); if (!client.connect("10.0.2.2", 5000)) { runOnUiThread(() -> Toast.makeText(this, "Sunucuya bağlanılamadı", Toast.LENGTH_LONG).show()); return; } try { JSONObject request = new JSONObject(); request.put("command", "SELECT_CHARACTER"); request.put("session_token", sessionToken); request.put("character_id", characterId); JSONObject response = client.request(request); client.close(); if (response != null && response.optBoolean("ok")) { runOnUiThread(() -> { Toast.makeText(this, "Karakter seçildi", Toast.LENGTH_SHORT).show();
+Intent intent = new Intent(this, MainActivity.class);
+intent.putExtra("session_token", sessionToken);
+startActivity(intent);
+finish(); }); } else { runOnUiThread(() -> Toast.makeText(this, "Karakter seçilemedi", Toast.LENGTH_LONG).show()); } } catch (Exception e) { client.close(); runOnUiThread(() -> Toast.makeText(this, "Karakter seçim hatası", Toast.LENGTH_LONG).show()); } }).start(); }
     }
